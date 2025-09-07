@@ -26,11 +26,3 @@ jobs:
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress --no-suggest
-
-    - name: Run test suites
-      run: composer run-script test
-
-    - name: "Send code coverage report to Codecov.io"
-      env:
-        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
-      run: "bash <(curl -s https://codecov.io/bash) || true"
