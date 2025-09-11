@@ -150,16 +150,7 @@ class RepositoryMongo extends Repository
 
     protected function prepareWhere(array $where): array
     {
-        $map = [
-            self::NOT_EQUAL => '$ne',
-            self::GREATER => '$gt',
-            self::GREATER_OR_EQUAL => '$gte',
-            self::LOWER => '$lt',
-            self::LOWER_OR_EQUAL => '$lte',
-            self::IN => '$in',
-            self::NOT_IN => '$nin'
-        ];
-
+        $map = $this->getWhereOperationsMap();
         $preparedWhere = [];
 
         foreach ($where as $field => $cond) {
@@ -172,7 +163,8 @@ class RepositoryMongo extends Repository
 
             foreach ($cond as $key => $value) {
                 if (in_array($key, static::ALL_OPERATIONS)) {
-                    $preparedWhere[$field][$map[$key]] = $value;
+                    list($operation, $preparedValue) = $map[$key]($value);
+                    $preparedWhere[$field][$operation] = $preparedValue;
                 } else {
                     throw new \Exception('Incorrect where condition');
                 }
@@ -180,6 +172,36 @@ class RepositoryMongo extends Repository
         }
 
         return $preparedWhere;
+    }
+
+    protected function getWhereOperationsMap(): array
+    {
+        return [
+            self::NOT_EQUAL => function ($value): array {
+                return ['$ne', $value];
+            },
+            self::GREATER => function ($value): array {
+                return ['$gt', $value];
+            },
+            self::GREATER_OR_EQUAL => function ($value): array {
+                return ['$gte', $value];
+            },
+            self::LOWER => function ($value): array {
+                return ['$lt', $value];
+            },
+            self::LOWER_OR_EQUAL => function ($value): array {
+                return ['$lte', $value];
+            },
+            self::IN => function ($value): array {
+                return ['$in', $value];
+            },
+            self::NOT_IN => function ($value): array {
+                return ['$nin', $value];
+            },
+            self::LIKE => function ($value): array {
+                return ['$regex', '/' . $value . '/'];
+            }
+        ];
     }
 
     protected function prepareOrderBy(array $orderBy): array
