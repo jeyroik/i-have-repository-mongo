@@ -165,7 +165,9 @@ class RepositoryMongo extends Repository
                 if (in_array($key, static::ALL_OPERATIONS)) {
                     $preparedWhere[$field][$map[$key]] = $value;
                 } else {
-                    throw new \Exception('Incorrect where condition');
+                    // just a multi-dimensional document
+                    $preparedWhere[$field] = $cond;
+                    break;
                 }
             }
         }
